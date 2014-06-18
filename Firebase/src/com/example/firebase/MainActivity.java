@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.os.Build;
 
@@ -31,15 +32,24 @@ public class MainActivity extends ListActivity {
     //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
     ArrayAdapter<String> adapter;
     
-  //RECORDING HOW MANY TIMES THE BUTTON HAS BEEN CLICKED
+    //RECORDING HOW MANY TIMES THE BUTTON HAS BEEN CLICKED
     int clickCounter=0;
+    
+    // text field for taking names
+    EditText firstName;
+    EditText lastName;
     
 	@Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		lastName = (EditText) findViewById(R.id.editText2);
+		firstName = (EditText) findViewById(R.id.editText1);
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
 		setListAdapter(adapter);
+		
+	
+	
 		
     	Firebase f = new Firebase("https://incandescent-fire-4835.firebaseio.com/Users");
 		f.addValueEventListener(new ValueEventListener() {
@@ -49,7 +59,9 @@ public class MainActivity extends ListActivity {
 				for (DataSnapshot obj : snapshot.getChildren()) {
 					String firstName = obj.child("first").getValue().toString();
 					String lastName = obj.child("last").getValue().toString();
-			        listItems.add(lastName + ", " + firstName);
+					if (!listItems.contains(lastName + ", " + firstName)) {
+						listItems.add(lastName + ", " + firstName);
+					}
 			        adapter.notifyDataSetChanged();
 				}
 		  }
@@ -63,6 +75,14 @@ public class MainActivity extends ListActivity {
     //METHOD WHICH WILL HANDLE DYNAMIC INSERTION
     public void addItems(View v) {
     	Firebase f = new Firebase("https://incandescent-fire-4835.firebaseio.com/Users");
+    	
+    	// add first and last name inputted
+		Map<String, Object> toSet = new HashMap<String, Object>();
+		toSet.put("first", firstName.getText().toString());
+		toSet.put("last", lastName.getText().toString());
+		f.push().setValue(toSet);
+		
+		
 		f.addValueEventListener(new ValueEventListener() {
 		  @Override
 		  public void onDataChange(DataSnapshot snapshot) {
@@ -70,7 +90,9 @@ public class MainActivity extends ListActivity {
 				for (DataSnapshot obj : snapshot.getChildren()) {
 					String firstName = obj.child("first").getValue().toString();
 					String lastName = obj.child("last").getValue().toString();
-			        listItems.add(lastName + ", " + firstName);
+					if (!listItems.contains(lastName + ", " + firstName)){
+						listItems.add(lastName + ", " + firstName);
+					}
 			        adapter.notifyDataSetChanged();
 				}
 		  }
